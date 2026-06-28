@@ -30,6 +30,10 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
   // Handle status update
   const handleStatusSubmit = async (e) => {
     e.preventDefault();
+    if (status === 'completed' && (!lead.installationProofUrl || lead.installationProofUrl.trim() === '')) {
+      setError('Please upload the proof of installation under the "Upload Proof" tab before marking it as completed.');
+      return;
+    }
     setLoading(true);
     setError('');
     setSuccess('');
