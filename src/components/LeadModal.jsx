@@ -244,6 +244,17 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                     <FiPhone className="h-4 w-4" /> Call Representative
                   </a>
                 )}
+
+                {lead.invoiceUrl && (
+                  <a
+                    href={lead.invoiceUrl.startsWith('http') ? lead.invoiceUrl : `http://localhost:5001${lead.invoiceUrl}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs transition"
+                  >
+                    <FiFileText className="h-4 w-4" /> View Invoice
+                  </a>
+                )}
                 
                 {lead.installationProofUrl && (
                   <a
