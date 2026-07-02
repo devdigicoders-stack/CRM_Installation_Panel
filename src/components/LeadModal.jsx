@@ -193,7 +193,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                   <div className="space-y-2 text-xs">
                     <p className="flex items-center gap-2 text-slate-600">
                       <FiPhone className="text-slate-400" />
-                      <a href={`tel:${lead.phone}`} className="hover:underline font-semibold">{lead.phone}</button>
+                      <a href={`tel:${lead.phone}`} className="hover:underline font-semibold">{lead.phone}</a>
                     </p>
                     {lead.email && (
                       <p className="flex items-center gap-2 text-slate-600">
