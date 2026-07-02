@@ -234,7 +234,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
               {/* Integrations (Quick Links) */}
               <div className="flex flex-wrap gap-3">
                 {lead.integrations?.whatsappLink && (
-                  <a
+                  <button
                     onClick={() => setWaModalLead(lead)}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs transition"
                   >
