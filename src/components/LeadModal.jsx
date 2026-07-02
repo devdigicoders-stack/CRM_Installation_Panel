@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import WhatsAppChooserModal from './WhatsAppChooserModal';
 import { installationAPI } from '../utils/api';
 import { 
   FiX, 
@@ -17,6 +18,8 @@ import {
 } from 'react-icons/fi';
 
 export default function LeadModal({ lead, onClose, onRefresh }) {
+  const [waModalLead, setWaModalLead] = useState(null);
+
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'status', 'issue', 'proof'
   const [status, setStatus] = useState(lead.installationStatus || 'assigned');
   const [progressRemarks, setProgressRemarks] = useState(lead.installationProgressRemarks || '');
@@ -190,7 +193,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                   <div className="space-y-2 text-xs">
                     <p className="flex items-center gap-2 text-slate-600">
                       <FiPhone className="text-slate-400" />
-                      <a href={`tel:${lead.phone}`} className="hover:underline font-semibold">{lead.phone}</a>
+                      <a href={`tel:${lead.phone}`} className="hover:underline font-semibold">{lead.phone}</button>
                     </p>
                     {lead.email && (
                       <p className="flex items-center gap-2 text-slate-600">
@@ -232,13 +235,11 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
               <div className="flex flex-wrap gap-3">
                 {lead.integrations?.whatsappLink && (
                   <a
-                    href={lead.integrations.whatsappLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
+                    onClick={() => setWaModalLead(lead)}
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 font-bold text-xs transition"
                   >
                     <FiMessageCircle className="h-4 w-4" /> WhatsApp Message
-                  </a>
+                  </button>
                 )}
                 {lead.integrations?.callUri && (
                   <a
@@ -454,6 +455,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
 
         </div>
       </div>
+      <WhatsAppChooserModal link={waModalLead?.integrations?.whatsappLink} phone={waModalLead?.phone} isOpen={!!waModalLead} onClose={() => setWaModalLead(null)} />
     </div>
   );
 }
