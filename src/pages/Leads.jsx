@@ -429,6 +429,11 @@ export default function Leads() {
                         ₹{lead.dealValue || 0}
                       </td>
 
+                      {/* AWB Number */}
+                      <td className="px-6 py-4 whitespace-nowrap font-bold text-indigo-600">
+                        {lead.awbNumber || '-'}
+                      </td>
+
                       {/* Latest Remarks */}
                       <td className="px-6 py-4 max-w-xs truncate text-slate-500 text-xs italic">
                         {lead.installationProgressRemarks || lead.remarks?.[lead.remarks.length - 1]?.note || '-'}
