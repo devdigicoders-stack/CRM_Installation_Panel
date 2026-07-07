@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authAPI, getAuthToken } from '../utils/api';
-import { FiMail, FiLock, FiAlertTriangle, FiHardDrive } from 'react-icons/fi';
+import { FiMail, FiLock, FiAlertTriangle, FiHardDrive, FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -9,6 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if already authenticated
   useEffect(() => {
@@ -97,13 +98,20 @@ export default function Login() {
                 <FiLock className="h-5 w-5" />
               </span>
               <input
-                type="password"
+                type={showPassword ? "text" : "password"}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
-                className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-11 pr-4 py-3.5 text-slate-700 placeholder-slate-400 text-xs focus:outline-none focus:border-green-500 focus:bg-white transition"
+                className="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-11 pr-11 py-3.5 text-slate-700 placeholder-slate-400 text-xs focus:outline-none focus:border-green-500 focus:bg-white transition"
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-400 hover:text-slate-600 focus:outline-none"
+              >
+                {showPassword ? <FiEyeOff className="h-5 w-5" /> : <FiEye className="h-5 w-5" />}
+              </button>
             </div>
           </div>
 

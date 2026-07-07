@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { authAPI } from '../utils/api';
-import { FiLock, FiAlertTriangle, FiCheckCircle } from 'react-icons/fi';
+import { FiLock, FiAlertTriangle, FiCheckCircle, FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function ChangePassword() {
   const [currentPassword, setCurrentPassword] = useState('');
@@ -11,6 +11,9 @@ export default function ChangePassword() {
   const [passLoading, setPassLoading] = useState(false);
   const [passError, setPassError] = useState('');
   const [passSuccess, setPassSuccess] = useState('');
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
@@ -68,14 +71,19 @@ export default function ChangePassword() {
                 <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                   Current Password
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
-                />
+                <div className="relative">
+                  <input
+                    type={showCurrent ? "text" : "password"}
+                    required
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
+                  />
+                  <button type="button" onClick={() => setShowCurrent(!showCurrent)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                    {showCurrent ? <FiEyeOff /> : <FiEye />}
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -83,27 +91,37 @@ export default function ChangePassword() {
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                     New Password
                   </label>
-                  <input
-                    type="password"
-                    required
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showNew ? "text" : "password"}
+                      required
+                      value={newPassword}
+                      onChange={(e) => setNewPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
+                    />
+                    <button type="button" onClick={() => setShowNew(!showNew)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      {showNew ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
                     Confirm New Password
                   </label>
-                  <input
-                    type="password"
-                    required
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showConfirm ? "text" : "password"}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
+                    />
+                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                      {showConfirm ? <FiEyeOff /> : <FiEye />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
