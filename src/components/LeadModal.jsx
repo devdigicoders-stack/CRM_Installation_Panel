@@ -428,7 +428,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                     {file ? file.name : 'Click or Drag file to upload'}
                   </p>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Supports PNG, JPG, JPEG or PDF (max 10MB)
+                    Supports PNG, JPG, JPEG, SVG, WEBP or PDF (max 10MB)
                   </p>
                 </div>
               </div>
