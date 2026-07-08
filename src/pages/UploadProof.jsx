@@ -3,6 +3,9 @@ import Sidebar from '../components/Sidebar';
 import { installationAPI } from '../utils/api';
 import { FiUpload, FiAlertTriangle, FiCheckCircle, FiLoader, FiFileText } from 'react-icons/fi';
 
+const SERVER_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1').replace('/api/v1', '');
+const getFileUrl = (url) => url?.startsWith('http') ? url : `${SERVER_BASE_URL}${url}`;
+
 export default function UploadProof() {
   const [leads, setLeads] = useState([]);
   const [selectedLeadId, setSelectedLeadId] = useState('');
@@ -132,7 +135,7 @@ export default function UploadProof() {
                       <div className="p-4 rounded-2xl bg-[#e8effe]/30 border border-blue-100/60 text-xs flex justify-between items-center">
                         <span className="text-slate-500 font-medium">An installation proof is already uploaded.</span>
                         <a
-                          href={selectedLead.installationProofUrl.startsWith('http') ? selectedLead.installationProofUrl : `http://localhost:5001${selectedLead.installationProofUrl}`}
+                          href={getFileUrl(selectedLead.installationProofUrl)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold rounded-lg transition"

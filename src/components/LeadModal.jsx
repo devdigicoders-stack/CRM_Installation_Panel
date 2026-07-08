@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import WhatsAppChooserModal from './WhatsAppChooserModal';
 import { installationAPI } from '../utils/api';
+
+const SERVER_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1').replace('/api/v1', '');
+const getFileUrl = (url) => url?.startsWith('http') ? url : `${SERVER_BASE_URL}${url}`;
 import { 
   FiX, 
   FiPhone, 
@@ -252,7 +255,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
 
                 {lead.invoiceUrl && (
                   <a
-                    href={lead.invoiceUrl.startsWith('http') ? lead.invoiceUrl : `http://localhost:5001${lead.invoiceUrl}`}
+                    href={getFileUrl(lead.invoiceUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs transition"
@@ -263,7 +266,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 
                 {lead.installationProofUrl && (
                   <a
-                    href={lead.installationProofUrl.startsWith('http') ? lead.installationProofUrl : `http://localhost:5001${lead.installationProofUrl}`}
+                    href={getFileUrl(lead.installationProofUrl)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold text-xs transition ml-auto"
