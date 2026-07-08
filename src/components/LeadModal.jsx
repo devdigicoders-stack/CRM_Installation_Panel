@@ -225,10 +225,11 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                     <p className="text-slate-600 flex items-center gap-1.5">
                       <FiCalendar className="text-slate-400" /> Expected Delivery: <span className="text-slate-800 font-semibold">{lead.expectedDeliveryDate ? new Date(lead.expectedDeliveryDate).toLocaleDateString() : 'N/A'}</span>
                     </p>
-                    {lead.trackingId && (
-                      <p className="text-slate-600">
-                        Tracking ID: <span className="text-slate-800 font-mono">{lead.trackingId}</span>
-                      </p>
+                    {(lead.trackingId || lead.awbNumber) && (
+                      <div className="text-slate-600 flex flex-col gap-1 mt-1 border-t border-slate-200/60 pt-2">
+                        {lead.awbNumber && <p>AWB Number: <span className="text-indigo-600 font-mono font-bold">{lead.awbNumber}</span></p>}
+                        {lead.trackingId && <p>Tracking ID: <span className="text-slate-800 font-mono font-bold">{lead.trackingId}</span></p>}
+                      </div>
                     )}
                   </div>
                 </div>

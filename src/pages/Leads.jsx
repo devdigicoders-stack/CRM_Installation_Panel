@@ -372,6 +372,7 @@ export default function Leads() {
                     <th className="px-6 py-4 text-center">Verification</th>
                     <th className="px-6 py-4 text-center">Payment</th>
                     <th className="px-6 py-4 text-right">Deal Value</th>
+                    <th className="px-6 py-4 whitespace-nowrap">AWB / Tracking</th>
                     <th className="px-6 py-4">Latest Remarks</th>
                     <th className="px-6 py-4 text-center">Delivery</th>
                     <th className="px-6 py-4 text-center">Actions</th>
@@ -429,9 +430,15 @@ export default function Leads() {
                         ₹{lead.dealValue || 0}
                       </td>
 
-                      {/* AWB Number */}
-                      <td className="px-6 py-4 whitespace-nowrap font-bold text-indigo-600">
-                        {lead.awbNumber || '-'}
+                      {/* AWB / Tracking */}
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {lead.awbNumber ? (
+                          <div className="font-bold text-indigo-600 mb-0.5" title="AWB Number">AWB: {lead.awbNumber}</div>
+                        ) : null}
+                        {lead.trackingId ? (
+                          <div className="font-semibold text-slate-700 text-[10px]" title="Tracking ID">Track: {lead.trackingId}</div>
+                        ) : null}
+                        {!lead.awbNumber && !lead.trackingId && <span className="text-slate-400">-</span>}
                       </td>
 
                       {/* Latest Remarks */}
