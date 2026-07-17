@@ -8,6 +8,12 @@ export default function UpdateProgress() {
   const [selectedLeadId, setSelectedLeadId] = useState('');
   const [progressRemarks, setProgressRemarks] = useState('');
   const [currentStatus, setCurrentStatus] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredLeads = leads.filter((l) => 
+    l.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    l.phone?.includes(searchQuery)
+  );
 
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -106,18 +112,27 @@ export default function UpdateProgress() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Select Lead */}
-                <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-2">
-                    Select Lead / Work Order
+                <div className="space-y-3">
+                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-400">
+                    Search & Select Lead / Work Order
                   </label>
+                  
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search by name or mobile number..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
+                  />
+
                   <select
                     value={selectedLeadId}
                     onChange={(e) => handleLeadChange(e.target.value)}
                     required
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs text-slate-700 focus:outline-none focus:border-indigo-500 focus:bg-white transition"
                   >
                     <option value="">-- Choose a lead --</option>
-                    {leads.map((lead) => (
+                    {filteredLeads.map((lead) => (
                       <option key={lead._id} value={lead._id}>
                         {lead.name} ({lead.phone}) - Current Status: {lead.installationStatus}
                       </option>

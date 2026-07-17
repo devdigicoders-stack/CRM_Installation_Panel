@@ -380,7 +380,11 @@ export default function Leads() {
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white text-xs font-medium text-slate-700">
                   {leads.map((lead) => (
-                    <tr key={lead._id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr 
+                      key={lead._id} 
+                      className="hover:bg-slate-50/70 transition-colors cursor-pointer"
+                      onClick={() => setSelectedLead(lead)}
+                    >
                       <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-600 font-semibold">{lead.phone}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-400">{lead.email || '-'}</td>
@@ -462,7 +466,10 @@ export default function Leads() {
                       {/* Actions */}
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <button
-                          onClick={() => setSelectedLead(lead)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedLead(lead);
+                          }}
                           className="px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-bold rounded-lg transition"
                         >
                           Manage
