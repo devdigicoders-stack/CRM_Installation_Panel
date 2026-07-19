@@ -178,11 +178,13 @@ export default function Leads() {
   const getStatusPill = (val) => {
     switch (val) {
       case 'completed':
-        return 'bg-green-100 text-green-700 font-semibold text-[10px] px-2 py-0.5 rounded';
+        return 'bg-green-100 text-green-700 font-semibold text-[10px] px-2 py-0.5 rounded uppercase';
       case 'in_progress':
-        return 'bg-yellow-100 text-yellow-700 font-semibold text-[10px] px-2 py-0.5 rounded';
+        return 'bg-yellow-100 text-yellow-700 font-semibold text-[10px] px-2 py-0.5 rounded uppercase';
+      case 'assigned':
+        return 'bg-orange-100 text-orange-700 font-bold text-[10px] px-2 py-0.5 rounded uppercase border border-orange-300 shadow-sm';
       default:
-        return 'bg-indigo-100 text-indigo-700 font-semibold text-[10px] px-2 py-0.5 rounded';
+        return 'bg-indigo-100 text-indigo-700 font-semibold text-[10px] px-2 py-0.5 rounded uppercase';
     }
   };
 
@@ -367,6 +369,8 @@ export default function Leads() {
                     <th className="px-6 py-4">Name</th>
                     <th className="px-6 py-4">Phone</th>
                     <th className="px-6 py-4">Email</th>
+                    <th className="px-6 py-4">Address</th>
+                    <th className="px-6 py-4">Sales Rep</th>
                     <th className="px-6 py-4 text-center">Status</th>
                     <th className="px-6 py-4 text-center">Priority</th>
                     <th className="px-6 py-4 text-center">Verification</th>
@@ -389,10 +393,20 @@ export default function Leads() {
                       <td className="px-6 py-4 whitespace-nowrap text-slate-600 font-semibold">{lead.phone}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-400">{lead.email || '-'}</td>
                       
+                      {/* Address */}
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-500 max-w-[150px] truncate" title={lead.address}>
+                        {lead.address || '-'}
+                      </td>
+                      
+                      {/* Sales Rep */}
+                      <td className="px-6 py-4 whitespace-nowrap text-slate-700 font-medium">
+                        {lead.assignedTo?.name || '-'}
+                      </td>
+
                       {/* Status */}
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <span className={getStatusPill(lead.installationStatus)}>
-                          {lead.installationStatus}
+                          {lead.installationStatus === 'assigned' ? 'Pending' : lead.installationStatus.replace('_', ' ')}
                         </span>
                       </td>
 

@@ -105,6 +105,8 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
         return 'bg-green-100 text-green-700 border border-green-200';
       case 'in_progress':
         return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
+      case 'assigned':
+        return 'bg-orange-100 text-orange-700 border border-orange-300 shadow-sm animate-pulse';
       default:
         return 'bg-indigo-100 text-indigo-700 border border-indigo-200';
     }
@@ -120,7 +122,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
             <h2 className="text-xl font-bold text-slate-800">{lead.name}</h2>
             <div className="flex gap-2 items-center mt-1">
               <span className={`text-xs px-2.5 py-0.5 rounded-full capitalize font-bold ${getStatusBadge(lead.installationStatus)}`}>
-                {lead.installationStatus}
+                {lead.installationStatus === 'assigned' ? 'Pending' : lead.installationStatus.replace('_', ' ')}
               </span>
               {lead.installationIssueReported && (
                 <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 font-bold animate-pulse">
@@ -188,7 +190,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
           {activeTab === 'info' && (
             <div className="space-y-6">
               {/* Core Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-3">
                   <h3 className="text-xs font-bold text-slate-400 border-b border-slate-200/80 pb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
                     Contact & Address
@@ -204,10 +206,16 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                         <a href={`mailto:${lead.email}`} className="hover:underline">{lead.email}</a>
                       </p>
                     )}
-                    <p className="flex items-start gap-2 text-slate-600">
+                    <p className="flex items-start gap-2 text-slate-600 mt-2 border-t border-slate-200/60 pt-2">
                       <FiMapPin className="text-slate-400 mt-0.5 shrink-0" />
-                      <span>{lead.productDetails || 'No product details / address provided'}</span>
+                      <span>{lead.address || 'Address not provided'}</span>
                     </p>
+                    {lead.productDetails && (
+                      <p className="flex items-start gap-2 text-slate-600 mt-2">
+                        <FiFileText className="text-slate-400 mt-0.5 shrink-0" />
+                        <span>{lead.productDetails}</span>
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -231,6 +239,22 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                         {lead.trackingId && <p>Tracking ID: <span className="text-slate-800 font-mono font-bold">{lead.trackingId}</span></p>}
                       </div>
                     )}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/60 space-y-3">
+                  <h3 className="text-xs font-bold text-slate-400 border-b border-slate-200/80 pb-1.5 flex items-center gap-1.5 uppercase tracking-wider">
+                    Assigned Team
+                  </h3>
+                  <div className="space-y-2 text-xs">
+                    <p className="text-slate-600 flex flex-col gap-0.5">
+                      <span className="text-slate-400 text-[10px] uppercase">Sales Representative</span>
+                      <span className="font-bold text-slate-900">{lead.assignedTo ? lead.assignedTo.name : 'Unassigned'}</span>
+                    </p>
+                    <p className="text-slate-600 flex flex-col gap-0.5 mt-2 pt-2 border-t border-slate-200/60">
+                      <span className="text-slate-400 text-[10px] uppercase">Account Team</span>
+                      <span className="font-bold text-slate-900">Finance & Accounts Dept</span>
+                    </p>
                   </div>
                 </div>
               </div>
