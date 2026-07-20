@@ -288,6 +288,24 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                     <FiFileText className="h-4 w-4" /> View Invoice
                   </a>
                 )}
+
+                {(() => {
+                  const screenshots = Array.from(new Set([
+                    ...(Array.isArray(lead.paymentScreenshots) ? lead.paymentScreenshots : []),
+                    ...(lead.paymentScreenshot ? [lead.paymentScreenshot] : [])
+                  ]));
+                  return screenshots.map((url, i) => (
+                    <a
+                      key={i}
+                      href={getFileUrl(url)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 font-bold text-xs transition"
+                    >
+                      <FiFileText className="h-4 w-4" /> View Payment SS {screenshots.length > 1 ? i + 1 : ''}
+                    </a>
+                  ));
+                })()}
                 
                 {lead.installationProofUrl && (
                   <a
