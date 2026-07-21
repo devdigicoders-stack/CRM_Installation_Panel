@@ -147,16 +147,22 @@ export const installationAPI = {
     
     return request(`/installation/leads?${query.toString()}`);
   },
-  updateStatus: async (leadId, status, progressRemarks) => {
+  updateStatus: async (leadId, status, progressRemarks, clearIssue = false) => {
     return request(`/installation/leads/${leadId}/status`, {
       method: 'PUT',
-      body: { status, progressRemarks },
+      body: { status, progressRemarks, clearIssue },
     });
   },
-  reportIssue: async (leadId, issueRemarks) => {
+  reportIssue: async (leadId, issueRemarks, issueType = 'issue') => {
     return request(`/installation/leads/${leadId}/issue`, {
       method: 'PUT',
-      body: { issueRemarks },
+      body: { issueRemarks, issueType },
+    });
+  },
+  resolveIssue: async (leadId, resolutionRemarks = '') => {
+    return request(`/installation/leads/${leadId}/resolve-issue`, {
+      method: 'PUT',
+      body: { resolutionRemarks },
     });
   },
   uploadProof: async (leadId, file) => {

@@ -26,7 +26,9 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
   const [activeTab, setActiveTab] = useState('info'); // 'info', 'status', 'issue', 'proof'
   const [status, setStatus] = useState(lead.installationStatus || 'assigned');
   const [progressRemarks, setProgressRemarks] = useState(lead.installationProgressRemarks || '');
+  const [issueType, setIssueType] = useState('issue'); // 'issue' or 'delay'
   const [issueRemarks, setIssueRemarks] = useState('');
+  const [clearIssue, setClearIssue] = useState(lead.installationIssueReported || false);
   const [file, setFile] = useState(null);
   
   const [loading, setLoading] = useState(false);
@@ -44,7 +46,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
     setError('');
     setSuccess('');
     try {
-      await installationAPI.updateStatus(lead._id, status, progressRemarks);
+      await installationAPI.updateStatus(lead._id, status, progressRemarks, clearIssue);
       setSuccess('Status updated successfully!');
       onRefresh();
     } catch (err) {
@@ -54,23 +56,39 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
     }
   };
 
-  // Handle reporting issue
+  // Handle reporting issue/delay
   const handleIssueSubmit = async (e) => {
     e.preventDefault();
     if (!issueRemarks.trim()) {
-      setError('Please enter issue remarks.');
+      setError('Please enter remarks.');
       return;
     }
     setLoading(true);
     setError('');
     setSuccess('');
     try {
-      await installationAPI.reportIssue(lead._id, issueRemarks);
-      setSuccess('Issue reported successfully!');
+      await installationAPI.reportIssue(lead._id, issueRemarks, issueType);
+      setSuccess(`${issueType === 'delay' ? 'Delay' : 'Issue'} reported successfully!`);
       setIssueRemarks('');
       onRefresh();
     } catch (err) {
-      setError(err.message || 'Failed to report issue');
+      setError(err.message || 'Failed to report issue/delay');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle resolving issue/delay
+  const handleResolveIssue = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await installationAPI.resolveIssue(lead._id, 'Issue/Delay marked resolved by user');
+      setSuccess('Active issue/delay flag resolved and cleared!');
+      onRefresh();
+    } catch (err) {
+      setError(err.message || 'Failed to resolve issue');
     } finally {
       setLoading(false);
     }
@@ -122,11 +140,16 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
             <h2 className="text-xl font-bold text-slate-800">{lead.name}</h2>
             <div className="flex gap-2 items-center mt-1">
               <span className={`text-xs px-2.5 py-0.5 rounded-full capitalize font-bold ${getStatusBadge(lead.installationStatus)}`}>
-                {lead.installationStatus === 'assigned' ? 'Pending' : lead.installationStatus.replace('_', ' ')}
+                {lead.installationStatus.replace('_', ' ')}
               </span>
               {lead.installationIssueReported && (
-                <span className="inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200 font-bold animate-pulse">
-                  <FiAlertTriangle className="h-3 w-3" /> Issue Reported
+                <span className={`inline-flex items-center gap-1 text-xs px-2.5 py-0.5 rounded-full font-bold animate-pulse border ${
+                  lead.installationIssueType === 'delay'
+                    ? 'bg-amber-100 text-amber-800 border-amber-300'
+                    : 'bg-red-100 text-red-700 border-red-200'
+                }`}>
+                  {lead.installationIssueType === 'delay' ? <FiClock className="h-3 w-3" /> : <FiAlertTriangle className="h-3 w-3" />}
+                  {lead.installationIssueType === 'delay' ? 'Delay Reported' : 'Issue Reported'}
                 </span>
               )}
             </div>
@@ -319,15 +342,37 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 )}
               </div>
 
-              {/* Issue Details */}
-              {lead.installationIssueReported && lead.installationIssueRemarks && (
-                <div className="p-4 rounded-2xl bg-red-50 border border-red-150 space-y-2">
-                  <h4 className="text-xs font-bold text-red-700 flex items-center gap-1.5 uppercase tracking-wider">
-                    <FiAlertTriangle className="h-4 w-4" /> Current Delay / Issue Report
-                  </h4>
-                  <p className="text-xs text-slate-600 leading-relaxed italic">
-                    "{lead.installationIssueRemarks}"
-                  </p>
+              {/* Issue / Delay Details */}
+              {lead.installationIssueReported && (
+                <div className={`p-4 rounded-2xl border space-y-2 ${
+                  lead.installationIssueType === 'delay'
+                    ? 'bg-amber-50 border-amber-200'
+                    : 'bg-red-50 border-red-200'
+                }`}>
+                  <div className="flex justify-between items-center">
+                    <h4 className={`text-xs font-bold flex items-center gap-1.5 uppercase tracking-wider ${
+                      lead.installationIssueType === 'delay' ? 'text-amber-800' : 'text-red-700'
+                    }`}>
+                      {lead.installationIssueType === 'delay' ? (
+                        <><FiClock className="h-4 w-4" /> Current Delay Report</>
+                      ) : (
+                        <><FiAlertTriangle className="h-4 w-4" /> Current Issue Report</>
+                      )}
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={handleResolveIssue}
+                      disabled={loading}
+                      className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-bold transition shadow-xs flex items-center gap-1"
+                    >
+                      <FiCheckCircle className="h-3.5 w-3.5" /> Resolve / Clear Flag
+                    </button>
+                  </div>
+                  {lead.installationIssueRemarks && (
+                    <p className="text-xs text-slate-600 leading-relaxed italic">
+                      "{lead.installationIssueRemarks}"
+                    </p>
+                  )}
                 </div>
               )}
 
@@ -400,6 +445,18 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 />
               </div>
 
+              {lead.installationIssueReported && (
+                <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 bg-amber-50 border border-amber-200 p-3 rounded-xl cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={clearIssue}
+                    onChange={(e) => setClearIssue(e.target.checked)}
+                    className="rounded text-green-600 focus:ring-green-500 h-4 w-4"
+                  />
+                  <span>Clear & resolve active issue/delay flag with this status update</span>
+                </label>
+              )}
+
               {status === 'completed' && !lead.installationProofUrl && (
                 <div className="p-4 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs flex gap-2 items-center">
                   <FiAlertTriangle className="h-5 w-5 shrink-0" />
@@ -417,25 +474,64 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
             </form>
           )}
 
-          {/* TAB CONTENT: REPORT ISSUE */}
+          {/* TAB CONTENT: REPORT ISSUE / DELAY */}
           {activeTab === 'issue' && (
             <form onSubmit={handleIssueSubmit} className="space-y-4">
-              <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-600 text-xs flex gap-2">
-                <FiAlertTriangle className="h-5 w-5 shrink-0 mt-0.5 text-red-500" />
-                <div>
-                  <p className="font-bold text-red-700">Reporting Issues or Delays</p>
-                  <p className="opacity-80 mt-0.5">This will flag the lead on the admin dashboard, letting them know there is a bottleneck or delay.</p>
+              {lead.installationIssueReported && (
+                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex justify-between items-center">
+                  <div className="flex gap-2 items-center font-bold">
+                    <FiAlertTriangle className="h-4 w-4 text-amber-600" />
+                    <span>Active Flag: "{lead.installationIssueRemarks}"</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleResolveIssue}
+                    disabled={loading}
+                    className="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold transition"
+                  >
+                    Resolve / Clear Flag
+                  </button>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                  Select Type
+                </label>
+                <div className="grid grid-cols-2 gap-3 mb-3">
+                  <button
+                    type="button"
+                    onClick={() => setIssueType('issue')}
+                    className={`py-3 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition ${
+                      issueType === 'issue'
+                        ? 'bg-red-100 border-red-300 text-red-700 ring-2 ring-red-500'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <FiAlertTriangle className="h-4 w-4" /> 🚨 Technical / Site Issue
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIssueType('delay')}
+                    className={`py-3 px-4 rounded-2xl border text-xs font-bold flex items-center justify-center gap-2 transition ${
+                      issueType === 'delay'
+                        ? 'bg-amber-100 border-amber-300 text-amber-800 ring-2 ring-amber-500'
+                        : 'bg-slate-50 border-slate-200 text-slate-500 hover:bg-slate-100'
+                    }`}
+                  >
+                    <FiClock className="h-4 w-4" /> ⏳ Installation Delay
+                  </button>
                 </div>
               </div>
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Describe Issue / Reason for Delay
+                  Describe {issueType === 'delay' ? 'Reason for Delay' : 'Issue Details'}
                 </label>
                 <textarea
                   value={issueRemarks}
                   onChange={(e) => setIssueRemarks(e.target.value)}
-                  placeholder="Explain why the installation is delayed or what problem you encountered..."
+                  placeholder={issueType === 'delay' ? "Explain why installation is delayed..." : "Explain what problem or issue was encountered..."}
                   rows={4}
                   required
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-700 text-xs focus:outline-none focus:border-red-500 focus:bg-white resize-none transition"
@@ -445,9 +541,13 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full flex items-center justify-center gap-2 py-3.5 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white font-bold rounded-2xl transition shadow-lg shadow-red-500/10"
+                className={`w-full flex items-center justify-center gap-2 py-3.5 text-white font-bold rounded-2xl transition shadow-lg ${
+                  issueType === 'delay'
+                    ? 'bg-amber-600 hover:bg-amber-700 shadow-amber-500/10'
+                    : 'bg-red-600 hover:bg-red-700 shadow-red-500/10'
+                }`}
               >
-                {loading ? 'Submitting Report...' : 'Report Issue / Delay'}
+                {loading ? 'Submitting...' : `Report ${issueType === 'delay' ? 'Delay' : 'Issue'}`}
               </button>
             </form>
           )}

@@ -308,16 +308,18 @@ export default function Leads() {
             </select>
           </div>
 
-          {/* Issues Dropdown */}
+          {/* Issues & Delays Dropdown */}
           <div>
             <select
               value={issueReported}
               onChange={(e) => handleIssueFilterChange(e.target.value)}
               className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm text-slate-700 focus:outline-none focus:border-green-500 focus:bg-white transition"
             >
-              <option value="">All Issues</option>
-              <option value="true">Issues Reported</option>
-              <option value="false">No Issues</option>
+              <option value="">All Issues & Delays</option>
+              <option value="issue">🚨 Issues Reported Only</option>
+              <option value="delay">⏳ Delays Reported Only</option>
+              <option value="true">⚠️ Any Issue or Delay</option>
+              <option value="false">✅ No Issues / Delays</option>
             </select>
           </div>
 
@@ -406,7 +408,7 @@ export default function Leads() {
                       {/* Status */}
                       <td className="px-6 py-4 text-center whitespace-nowrap">
                         <span className={getStatusPill(lead.installationStatus)}>
-                          {lead.installationStatus === 'assigned' ? 'Pending' : lead.installationStatus.replace('_', ' ')}
+                          {lead.installationStatus.replace('_', ' ')}
                         </span>
                       </td>
 
