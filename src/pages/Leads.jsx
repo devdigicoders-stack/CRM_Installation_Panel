@@ -362,9 +362,9 @@ export default function Leads() {
             </button>
           </div>
         ) : (
-          <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+          <div className="bg-white border border-slate-200 rounded-2xl shadow-xs" style={{ overflow: 'visible' }}>
             {/* Scrollable table container */}
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto" style={{ overflowY: 'visible' }}>
               <table className="min-w-full divide-y divide-slate-200 text-left">
                 <thead className="bg-[#f8fafc] text-[10px] font-bold text-slate-400 uppercase tracking-wider">
                   <tr>
@@ -405,8 +405,8 @@ export default function Leads() {
                         {lead.assignedTo?.name || '-'}
                       </td>
 
-                      {/* Latest Remarks */}
-                      <td className="px-6 py-4 max-w-xs truncate text-slate-500 text-xs italic">
+                      {/* Latest Remarks - with hover tooltip */}
+                      <td className="px-6 py-4 text-slate-500 text-xs italic">
                         {(() => {
                           const lastRemark = lead.remarks?.[lead.remarks.length - 1];
                           const remarkNote = lastRemark?.note;
@@ -415,14 +415,36 @@ export default function Leads() {
                             ? new Date(lead.installationProgressRemarksUpdatedAt)
                             : null;
 
-                          // Agar dono hain to jo latest ho wo dikhao
+                          let fullText = '-';
                           if (remarkNote && lead.installationProgressRemarks) {
-                            if (remarkDate && progressDate && remarkDate > progressDate) {
-                              return remarkNote;
-                            }
-                            return remarkNote; // remarks ko priority do (issue reports)
+                            fullText = remarkNote;
+                          } else {
+                            fullText = remarkNote || lead.installationProgressRemarks || '-';
                           }
-                          return remarkNote || lead.installationProgressRemarks || '-';
+
+                          if (fullText === '-') return <span>-</span>;
+
+                          return (
+                            <div className="relative group max-w-[180px]">
+                              <span className="block truncate cursor-default">
+                                {fullText}
+                              </span>
+                              {/* Tooltip */}
+                              <div className="absolute left-0 top-full mt-1 z-50 hidden group-hover:block pointer-events-none w-72">
+                                <div className="bg-slate-800 text-white text-xs rounded-xl shadow-2xl px-4 py-3 leading-relaxed border border-slate-700">
+                                  <p className="font-semibold text-slate-300 uppercase tracking-wider text-[10px] mb-1.5">Latest Remark</p>
+                                  <p className="whitespace-pre-wrap break-words not-italic">{fullText}</p>
+                                  {lastRemark?.createdAt && (
+                                    <p className="text-slate-400 mt-2 text-[10px]">
+                                      🕐 {new Date(lastRemark.createdAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                                    </p>
+                                  )}
+                                </div>
+                                {/* Arrow */}
+                                <div className="absolute -top-1.5 left-4 w-3 h-3 bg-slate-800 rotate-45 border-l border-t border-slate-700"></div>
+                              </div>
+                            </div>
+                          );
                         })()}
                       </td>
 
