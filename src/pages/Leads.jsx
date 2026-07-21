@@ -407,7 +407,23 @@ export default function Leads() {
 
                       {/* Latest Remarks */}
                       <td className="px-6 py-4 max-w-xs truncate text-slate-500 text-xs italic">
-                        {lead.installationProgressRemarks || lead.remarks?.[lead.remarks.length - 1]?.note || '-'}
+                        {(() => {
+                          const lastRemark = lead.remarks?.[lead.remarks.length - 1];
+                          const remarkNote = lastRemark?.note;
+                          const remarkDate = lastRemark?.createdAt ? new Date(lastRemark.createdAt) : null;
+                          const progressDate = lead.installationProgressRemarksUpdatedAt
+                            ? new Date(lead.installationProgressRemarksUpdatedAt)
+                            : null;
+
+                          // Agar dono hain to jo latest ho wo dikhao
+                          if (remarkNote && lead.installationProgressRemarks) {
+                            if (remarkDate && progressDate && remarkDate > progressDate) {
+                              return remarkNote;
+                            }
+                            return remarkNote; // remarks ko priority do (issue reports)
+                          }
+                          return remarkNote || lead.installationProgressRemarks || '-';
+                        })()}
                       </td>
 
                       {/* Status */}
