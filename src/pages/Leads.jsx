@@ -373,13 +373,13 @@ export default function Leads() {
                     <th className="px-6 py-4">Email</th>
                     <th className="px-6 py-4">Address</th>
                     <th className="px-6 py-4">Sales Rep</th>
+                    <th className="px-6 py-4">Latest Remarks</th>
                     <th className="px-6 py-4 text-center">Status</th>
                     <th className="px-6 py-4 text-center">Priority</th>
                     <th className="px-6 py-4 text-center">Verification</th>
                     <th className="px-6 py-4 text-center">Payment</th>
                     <th className="px-6 py-4 text-right">Deal Value</th>
                     <th className="px-6 py-4 whitespace-nowrap">AWB / Tracking</th>
-                    <th className="px-6 py-4">Latest Remarks</th>
                     <th className="px-6 py-4 text-center">Delivery</th>
                     <th className="px-6 py-4 text-center">Actions</th>
                   </tr>
@@ -403,6 +403,11 @@ export default function Leads() {
                       {/* Sales Rep */}
                       <td className="px-6 py-4 whitespace-nowrap text-slate-700 font-medium">
                         {lead.assignedTo?.name || '-'}
+                      </td>
+
+                      {/* Latest Remarks */}
+                      <td className="px-6 py-4 max-w-xs truncate text-slate-500 text-xs italic">
+                        {lead.installationProgressRemarks || lead.remarks?.[lead.remarks.length - 1]?.note || '-'}
                       </td>
 
                       {/* Status */}
@@ -459,11 +464,6 @@ export default function Leads() {
                           <div className="font-semibold text-slate-700 text-[10px]" title="Tracking ID">Track: {lead.trackingId}</div>
                         ) : null}
                         {!lead.awbNumber && !lead.trackingId && <span className="text-slate-400">-</span>}
-                      </td>
-
-                      {/* Latest Remarks */}
-                      <td className="px-6 py-4 max-w-xs truncate text-slate-500 text-xs italic">
-                        {lead.installationProgressRemarks || lead.remarks?.[lead.remarks.length - 1]?.note || '-'}
                       </td>
 
                       {/* Delivery Status */}
