@@ -49,6 +49,27 @@ export default function Leads() {
   const [error, setError] = useState('');
   const [selectedLead, setSelectedLead] = useState(null);
 
+  const [seenLeads, setSeenLeads] = useState(() => {
+    try {
+      const saved = localStorage.getItem('seen_lead_ids');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const markLeadAsSeen = (leadId) => {
+    if (leadId && !seenLeads.includes(leadId)) {
+      const updated = [...seenLeads, leadId];
+      setSeenLeads(updated);
+      try {
+        localStorage.setItem('seen_lead_ids', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+  };
+
   // Sync state with URL params
   useEffect(() => {
     setStatus(urlStatus);
@@ -181,6 +202,8 @@ export default function Leads() {
         return 'bg-green-100 text-green-700 font-semibold text-[10px] px-2 py-0.5 rounded uppercase';
       case 'in_progress':
         return 'bg-yellow-100 text-yellow-700 font-semibold text-[10px] px-2 py-0.5 rounded uppercase';
+      case 'in_transit':
+        return 'bg-purple-100 text-purple-700 font-bold text-[10px] px-2 py-0.5 rounded uppercase border border-purple-300 shadow-xs';
       case 'assigned':
         return 'bg-orange-100 text-orange-700 font-bold text-[10px] px-2 py-0.5 rounded uppercase border border-orange-300 shadow-sm';
       default:
@@ -304,6 +327,7 @@ export default function Leads() {
               <option value="">All Statuses</option>
               <option value="assigned">Assigned</option>
               <option value="in_progress">In Progress</option>
+              <option value="in_transit">In Transit 🚚</option>
               <option value="completed">Completed</option>
             </select>
           </div>
@@ -374,6 +398,7 @@ export default function Leads() {
                     <th className="px-6 py-4">Address</th>
                     <th className="px-6 py-4">Sales Rep</th>
                     <th className="px-6 py-4">Latest Remarks</th>
+                    <th className="px-6 py-4">In-Transit Remark</th>
                     <th className="px-6 py-4 text-center">Status</th>
                     <th className="px-6 py-4 text-center">Priority</th>
                     <th className="px-6 py-4 text-center">Verification</th>
@@ -385,13 +410,31 @@ export default function Leads() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 bg-white text-xs font-medium text-slate-700">
-                  {leads.map((lead) => (
-                    <tr 
-                      key={lead._id} 
-                      className="hover:bg-slate-50/70 transition-colors cursor-pointer"
-                      onClick={() => setSelectedLead(lead)}
-                    >
-                      <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">{lead.name}</td>
+                  {leads.map((lead) => {
+                    const isNew = !seenLeads.includes(lead._id);
+                    return (
+                      <tr 
+                        key={lead._id} 
+                        className={`transition-colors cursor-pointer ${
+                          isNew 
+                            ? 'bg-blue-50/80 hover:bg-blue-100/90 border-l-4 border-blue-500 font-semibold' 
+                            : 'hover:bg-slate-50/70'
+                        }`}
+                        onClick={() => {
+                          markLeadAsSeen(lead._id);
+                          setSelectedLead(lead);
+                        }}
+                      >
+                        <td className="px-6 py-4 font-bold text-slate-900 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span>{lead.name}</span>
+                            {isNew && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-blue-600 text-white tracking-wide uppercase shadow-xs animate-pulse">
+                                NEW
+                              </span>
+                            )}
+                          </div>
+                        </td>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-600 font-semibold">{lead.phone}</td>
                       <td className="px-6 py-4 whitespace-nowrap text-slate-400">{lead.email || '-'}</td>
                       
@@ -446,6 +489,18 @@ export default function Leads() {
                             </div>
                           );
                         })()}
+                      </td>
+
+                      {/* In-Transit Remark (Separate Column) */}
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
+                        {lead.inTransitRemarks || (lead.installationStatus === 'in_transit' && lead.installationProgressRemarks) ? (
+                          <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-700 font-semibold px-2.5 py-1 rounded-xl max-w-[220px]" title={lead.inTransitRemarks || lead.installationProgressRemarks}>
+                            <span className="shrink-0 text-purple-600 font-bold text-xs">🚚</span>
+                            <span className="truncate">{lead.inTransitRemarks || lead.installationProgressRemarks}</span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-400 font-normal">-</span>
+                        )}
                       </td>
 
                       {/* Status */}
@@ -522,6 +577,7 @@ export default function Leads() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            markLeadAsSeen(lead._id);
                             setSelectedLead(lead);
                           }}
                           className="px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white text-xs font-bold rounded-lg transition"
@@ -530,7 +586,8 @@ export default function Leads() {
                         </button>
                       </td>
                     </tr>
-                  ))}
+                  );
+                })}
                 </tbody>
               </table>
             </div>

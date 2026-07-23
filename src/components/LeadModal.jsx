@@ -410,10 +410,11 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
                   Installation Status
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                   {[
                     { id: 'assigned', label: 'Assigned', color: 'border-indigo-200 text-indigo-700 bg-indigo-50/50' },
                     { id: 'in_progress', label: 'In Progress', color: 'border-yellow-200 text-yellow-700 bg-yellow-50/50' },
+                    { id: 'in_transit', label: 'In Transit 🚚', color: 'border-purple-200 text-purple-700 bg-purple-50/50' },
                     { id: 'completed', label: 'Completed', color: 'border-green-200 text-green-700 bg-green-50/50' },
                   ].map((s) => (
                     <button
@@ -434,12 +435,12 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
 
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Progress Remarks / Notes
+                  {status === 'in_transit' ? 'In-Transit Remarks / Tracking Notes' : 'Progress Remarks / Notes'}
                 </label>
                 <textarea
                   value={progressRemarks}
                   onChange={(e) => setProgressRemarks(e.target.value)}
-                  placeholder="Enter details about installation progress..."
+                  placeholder={status === 'in_transit' ? "Enter In-Transit details (e.g., Courier tracking number, dispatch details, expected arrival date...)" : "Enter details about installation progress..."}
                   rows={4}
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-700 text-xs focus:outline-none focus:border-green-500 focus:bg-white resize-none transition"
                 />
