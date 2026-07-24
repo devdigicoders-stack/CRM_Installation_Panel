@@ -17,7 +17,8 @@ import {
   FiUpload, 
   FiMessageSquare,
   FiMessageCircle,
-  FiCalendar
+  FiCalendar,
+  FiTrash2
 } from 'react-icons/fi';
 
 export default function LeadModal({ lead, onClose, onRefresh }) {
@@ -29,6 +30,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
   const [issueType, setIssueType] = useState('issue'); // 'issue' or 'delay'
   const [issueRemarks, setIssueRemarks] = useState('');
   const [clearIssue, setClearIssue] = useState(lead.installationIssueReported || false);
+  const [clearInTransitRemark, setClearInTransitRemark] = useState(false);
   const [file, setFile] = useState(null);
   
   const [loading, setLoading] = useState(false);
@@ -46,11 +48,28 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
     setError('');
     setSuccess('');
     try {
-      await installationAPI.updateStatus(lead._id, status, progressRemarks, clearIssue);
+      await installationAPI.updateStatus(lead._id, status, progressRemarks, clearIssue, clearInTransitRemark);
       setSuccess('Status updated successfully!');
       onRefresh();
     } catch (err) {
       setError(err.message || 'Failed to update status');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle clearing in-transit remark
+  const handleClearInTransitRemark = async () => {
+    if (!window.confirm('Are you sure you want to clear/remove the In-Transit Remark?')) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await installationAPI.clearInTransitRemark(lead._id);
+      setSuccess('In-Transit remark removed successfully!');
+      onRefresh();
+    } catch (err) {
+      setError(err.message || 'Failed to clear in-transit remark');
     } finally {
       setLoading(false);
     }
@@ -111,6 +130,23 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
       onRefresh();
     } catch (err) {
       setError(err.message || 'Failed to upload proof');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle proof delete
+  const handleDeleteProof = async () => {
+    if (!window.confirm('Are you sure you want to delete this installation proof photo/video?')) return;
+    setLoading(true);
+    setError('');
+    setSuccess('');
+    try {
+      await installationAPI.deleteProof(lead._id);
+      setSuccess('Installation proof deleted successfully!');
+      onRefresh();
+    } catch (err) {
+      setError(err.message || 'Failed to delete proof');
     } finally {
       setLoading(false);
     }
@@ -331,14 +367,24 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 })()}
                 
                 {lead.installationProofUrl && (
-                  <a
-                    href={getFileUrl(lead.installationProofUrl)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold text-xs transition ml-auto"
-                  >
-                    <FiFileText className="h-4 w-4" /> View Current Proof
-                  </a>
+                  <div className="flex items-center gap-2 ml-auto">
+                    <a
+                      href={getFileUrl(lead.installationProofUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 font-bold text-xs transition"
+                    >
+                      <FiFileText className="h-4 w-4" /> View Current Proof
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleDeleteProof}
+                      disabled={loading}
+                      className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold text-xs transition disabled:opacity-50"
+                    >
+                      <FiTrash2 className="h-4 w-4" /> Delete Proof
+                    </button>
+                  </div>
                 )}
               </div>
 
@@ -445,6 +491,35 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                   className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-700 text-xs focus:outline-none focus:border-green-500 focus:bg-white resize-none transition"
                 />
               </div>
+
+              {lead.inTransitRemarks && (
+                <div className="p-3.5 rounded-2xl bg-purple-50 border border-purple-200 text-xs flex justify-between items-center">
+                  <div className="flex items-center gap-2 text-purple-800 font-semibold truncate pr-2">
+                    <span>🚚 In-Transit Remark:</span>
+                    <span className="font-bold text-purple-900 truncate">"{lead.inTransitRemarks}"</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearInTransitRemark}
+                    disabled={loading}
+                    className="shrink-0 px-3 py-1.5 bg-purple-100 hover:bg-red-100 text-purple-700 hover:text-red-700 rounded-xl font-bold border border-purple-300 hover:border-red-300 transition text-xs flex items-center gap-1"
+                  >
+                    <FiTrash2 className="h-3.5 w-3.5" /> Remove Remark
+                  </button>
+                </div>
+              )}
+
+              {lead.inTransitRemarks && (
+                <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 bg-purple-50/50 border border-purple-200 p-3 rounded-xl cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={clearInTransitRemark}
+                    onChange={(e) => setClearInTransitRemark(e.target.checked)}
+                    className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4"
+                  />
+                  <span>Clear & remove previous In-Transit remark with this status update</span>
+                </label>
+              )}
 
               {lead.installationIssueReported && (
                 <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 bg-amber-50 border border-amber-200 p-3 rounded-xl cursor-pointer">
@@ -556,23 +631,47 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
           {/* TAB CONTENT: UPLOAD PROOF */}
           {activeTab === 'proof' && (
             <form onSubmit={handleProofSubmit} className="space-y-4">
+              {lead.installationProofUrl && (
+                <div className="p-4 rounded-2xl bg-[#e8effe]/30 border border-blue-100/60 text-xs flex justify-between items-center">
+                  <span className="text-slate-500 font-medium">An installation proof is currently uploaded.</span>
+                  <div className="flex items-center gap-2">
+                    <a
+                      href={getFileUrl(lead.installationProofUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold rounded-lg transition"
+                    >
+                      <FiFileText className="h-3.5 w-3.5" /> View Proof
+                    </a>
+                    <button
+                      type="button"
+                      onClick={handleDeleteProof}
+                      disabled={loading}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold rounded-lg transition disabled:opacity-50"
+                    >
+                      <FiTrash2 className="h-3.5 w-3.5" /> Delete
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                  Installation Proof File
+                  Installation Proof File (Photo / Video / Document)
                 </label>
                 <div className="border-2 border-dashed border-slate-350 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100/70 transition cursor-pointer relative">
                   <input
                     type="file"
-                    accept="image/*,.pdf"
+                    accept="image/*,video/*,.pdf"
                     onChange={(e) => setFile(e.target.files[0])}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   />
                   <FiUpload className="mx-auto h-10 w-10 text-slate-400 mb-3" />
                   <p className="text-xs font-bold text-slate-600">
-                    {file ? file.name : 'Click or Drag file to upload'}
+                    {file ? file.name : 'Click or Drag photo/video file to upload'}
                   </p>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Supports PNG, JPG, JPEG, SVG, WEBP or PDF (max 10MB)
+                    Supports Images (PNG, JPG, WEBP), Videos (MP4, MOV, WEBM), or PDF (max 100MB)
                   </p>
                 </div>
               </div>
@@ -595,7 +694,7 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                 disabled={loading || !file}
                 className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#4f46e5] hover:bg-[#4338ca] disabled:opacity-50 text-white font-bold rounded-2xl transition"
               >
-                {loading ? 'Uploading File...' : 'Upload Proof Document'}
+                {loading ? 'Uploading File...' : 'Upload Proof Document / Video'}
               </button>
             </form>
           )}

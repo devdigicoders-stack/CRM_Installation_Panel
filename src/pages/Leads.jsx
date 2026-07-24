@@ -13,7 +13,9 @@ import {
   FiMoon,
   FiActivity,
   FiCheckCircle,
-  FiBriefcase
+  FiBriefcase,
+  FiX,
+  FiTrash2
 } from 'react-icons/fi';
 
 export default function Leads() {
@@ -193,6 +195,17 @@ export default function Leads() {
     setIssueReported('');
     setCurrentPage(1);
     setSearchParams({});
+  };
+
+  const handleClearInTransitRemark = async (e, leadId) => {
+    if (e) e.stopPropagation();
+    if (!window.confirm('Are you sure you want to clear/remove the In-Transit Remark for this lead?')) return;
+    try {
+      await installationAPI.clearInTransitRemark(leadId);
+      fetchLeads();
+    } catch (err) {
+      alert(err.message || 'Failed to clear in-transit remark');
+    }
   };
 
   // Pill style helpers matching screenshot
@@ -494,9 +507,17 @@ export default function Leads() {
                       {/* In-Transit Remark (Separate Column) */}
                       <td className="px-6 py-4 whitespace-nowrap text-xs font-medium">
                         {lead.inTransitRemarks || (lead.installationStatus === 'in_transit' && lead.installationProgressRemarks) ? (
-                          <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-700 font-semibold px-2.5 py-1 rounded-xl max-w-[220px]" title={lead.inTransitRemarks || lead.installationProgressRemarks}>
+                          <div className="flex items-center gap-1.5 bg-purple-50 border border-purple-200 text-purple-700 font-semibold px-2.5 py-1 rounded-xl max-w-[240px]" title={lead.inTransitRemarks || lead.installationProgressRemarks}>
                             <span className="shrink-0 text-purple-600 font-bold text-xs">🚚</span>
-                            <span className="truncate">{lead.inTransitRemarks || lead.installationProgressRemarks}</span>
+                            <span className="truncate flex-1">{lead.inTransitRemarks || lead.installationProgressRemarks}</span>
+                            <button
+                              type="button"
+                              title="Clear / Remove In-Transit Remark"
+                              onClick={(e) => handleClearInTransitRemark(e, lead._id)}
+                              className="shrink-0 p-0.5 ml-1 hover:bg-purple-200 text-purple-600 hover:text-red-600 rounded transition"
+                            >
+                              <FiX className="h-3.5 w-3.5" />
+                            </button>
                           </div>
                         ) : (
                           <span className="text-slate-400 font-normal">-</span>

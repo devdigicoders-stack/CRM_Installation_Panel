@@ -147,10 +147,15 @@ export const installationAPI = {
     
     return request(`/installation/leads?${query.toString()}`);
   },
-  updateStatus: async (leadId, status, progressRemarks, clearIssue = false) => {
+  updateStatus: async (leadId, status, progressRemarks, clearIssue = false, clearInTransitRemark = false) => {
     return request(`/installation/leads/${leadId}/status`, {
       method: 'PUT',
-      body: { status, progressRemarks, clearIssue },
+      body: { status, progressRemarks, clearIssue, clearInTransitRemark },
+    });
+  },
+  clearInTransitRemark: async (leadId) => {
+    return request(`/installation/leads/${leadId}/clear-transit-remark`, {
+      method: 'PUT',
     });
   },
   reportIssue: async (leadId, issueRemarks, issueType = 'issue') => {
@@ -172,6 +177,11 @@ export const installationAPI = {
     return request(`/installation/leads/${leadId}/proof`, {
       method: 'PUT',
       body: formData,
+    });
+  },
+  deleteProof: async (leadId) => {
+    return request(`/installation/leads/${leadId}/proof`, {
+      method: 'DELETE',
     });
   }
 };

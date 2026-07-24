@@ -15,6 +15,9 @@ export default function UpdateStatus() {
     l.phone?.includes(searchQuery)
   );
 
+  const [clearInTransitRemark, setClearInTransitRemark] = useState(false);
+  const selectedLead = leads.find((l) => l._id === selectedLeadId);
+
   const [loading, setLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
@@ -42,6 +45,7 @@ export default function UpdateStatus() {
     setSelectedLeadId(leadId);
     setSuccess('');
     setError('');
+    setClearInTransitRemark(false);
     const selected = leads.find((l) => l._id === leadId);
     if (selected) {
       setStatus(selected.installationStatus || 'assigned');
@@ -64,7 +68,7 @@ export default function UpdateStatus() {
     setSuccess('');
 
     try {
-      await installationAPI.updateStatus(selectedLeadId, status, progressRemarks);
+      await installationAPI.updateStatus(selectedLeadId, status, progressRemarks, false, clearInTransitRemark);
       setSuccess('Installation status updated successfully!');
       fetchLeadsList(); // Refresh list to get updated details
     } catch (err) {
@@ -178,6 +182,18 @@ export default function UpdateStatus() {
                         className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-slate-700 text-xs focus:outline-none focus:border-green-500 focus:bg-white resize-none transition"
                       />
                     </div>
+
+                    {selectedLead?.inTransitRemarks && (
+                      <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 bg-purple-50 border border-purple-200 p-3 rounded-xl cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={clearInTransitRemark}
+                          onChange={(e) => setClearInTransitRemark(e.target.checked)}
+                          className="rounded text-purple-600 focus:ring-purple-500 h-4 w-4"
+                        />
+                        <span>Clear & remove previous In-Transit remark ("{selectedLead.inTransitRemarks}")</span>
+                      </label>
+                    )}
 
                     {status === 'completed' && (
                       <div className="p-4 rounded-2xl bg-yellow-50 border border-yellow-200 text-yellow-700 text-xs flex gap-2 items-center">

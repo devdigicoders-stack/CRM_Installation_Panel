@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import { installationAPI } from '../utils/api';
-import { FiUpload, FiAlertTriangle, FiCheckCircle, FiLoader, FiFileText } from 'react-icons/fi';
+import { FiUpload, FiAlertTriangle, FiCheckCircle, FiLoader, FiFileText, FiTrash2 } from 'react-icons/fi';
 
 const SERVER_BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:5001/api/v1').replace('/api/v1', '');
 const getFileUrl = (url) => url?.startsWith('http') ? url : `${SERVER_BASE_URL}${url}`;
@@ -19,6 +19,7 @@ export default function UploadProof() {
   );
 
   const [loading, setLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -71,13 +72,32 @@ export default function UploadProof() {
 
     try {
       await installationAPI.uploadProof(selectedLeadId, file);
-      setSuccess('Installation proof document uploaded successfully!');
+      setSuccess('Installation proof document/video uploaded successfully!');
       setFile(null);
       fetchLeadsList(); // Refresh to reflect new proof URL
     } catch (err) {
       setError(err.message || 'Failed to upload proof.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteProof = async () => {
+    if (!selectedLeadId) return;
+    if (!window.confirm('Are you sure you want to delete this installation proof photo/video?')) return;
+
+    setDeleteLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await installationAPI.deleteProof(selectedLeadId);
+      setSuccess('Installation proof deleted successfully!');
+      fetchLeadsList();
+    } catch (err) {
+      setError(err.message || 'Failed to delete proof.');
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -91,7 +111,7 @@ export default function UploadProof() {
         <div className="grid grid-cols-1 gap-8 max-w-2xl">
           <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-xs">
             <h2 className="text-base font-bold text-slate-800 mb-6 flex items-center gap-2">
-              <FiUpload className="text-[#4f46e5] h-5 w-5" /> Upload Proof Document
+              <FiUpload className="text-[#4f46e5] h-5 w-5" /> Upload Proof Document / Video
             </h2>
 
             {error && (
@@ -147,38 +167,48 @@ export default function UploadProof() {
                   <>
                     {/* Current proof URL check */}
                     {selectedLead?.installationProofUrl && (
-                      <div className="p-4 rounded-2xl bg-[#e8effe]/30 border border-blue-100/60 text-xs flex justify-between items-center">
+                      <div className="p-4 rounded-2xl bg-[#e8effe]/30 border border-blue-100/60 text-xs flex flex-wrap gap-2 justify-between items-center">
                         <span className="text-slate-500 font-medium">An installation proof is already uploaded.</span>
-                        <a
-                          href={getFileUrl(selectedLead.installationProofUrl)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold rounded-lg transition"
-                        >
-                          <FiFileText className="h-3.5 w-3.5" /> View Proof
-                        </a>
+                        <div className="flex items-center gap-2">
+                          <a
+                            href={getFileUrl(selectedLead.installationProofUrl)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#4f46e5] hover:bg-[#4338ca] text-white font-bold rounded-lg transition"
+                          >
+                            <FiFileText className="h-3.5 w-3.5" /> View Proof
+                          </a>
+                          <button
+                            type="button"
+                            onClick={handleDeleteProof}
+                            disabled={deleteLoading}
+                            className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold rounded-lg transition disabled:opacity-50"
+                          >
+                            <FiTrash2 className="h-3.5 w-3.5" /> {deleteLoading ? 'Deleting...' : 'Delete Proof'}
+                          </button>
+                        </div>
                       </div>
                     )}
 
                     {/* File Dropzone */}
                     <div>
                       <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                        Upload Proof File
+                        Upload Proof File (Photo / Video / Document)
                       </label>
                       <div className="border-2 border-dashed border-slate-350 rounded-2xl p-8 text-center bg-slate-50 hover:bg-slate-100/70 transition cursor-pointer relative">
                         <input
                           type="file"
-                          accept="image/*,.pdf"
+                          accept="image/*,video/*,.pdf"
                           onChange={(e) => setFile(e.target.files[0])}
-                          required
+                          required={!selectedLead?.installationProofUrl}
                           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                         />
                         <FiUpload className="mx-auto h-10 w-10 text-slate-400 mb-3" />
                         <p className="text-xs font-bold text-slate-600">
-                          {file ? file.name : 'Click or Drag file here to upload'}
+                          {file ? file.name : 'Click or Drag photo/video file here to upload'}
                         </p>
                         <p className="text-[10px] text-slate-400 mt-1">
-                          Supports PNG, JPG, JPEG, or PDF (max 10MB)
+                          Supports Images (PNG, JPG, WEBP), Videos (MP4, MOV, WEBM), or PDF (max 100MB)
                         </p>
                       </div>
                     </div>
@@ -201,7 +231,7 @@ export default function UploadProof() {
                       disabled={loading || !file}
                       className="w-full flex items-center justify-center gap-2 py-3.5 bg-[#4f46e5] hover:bg-[#4338ca] disabled:opacity-50 text-white font-bold rounded-2xl transition shadow-lg shadow-indigo-500/10"
                     >
-                      {loading ? 'Uploading Proof...' : 'Upload Proof Document'}
+                      {loading ? 'Uploading Proof...' : 'Upload Proof Document / Video'}
                     </button>
                   </>
                 )}
