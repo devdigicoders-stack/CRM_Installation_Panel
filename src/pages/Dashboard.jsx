@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
-import { installationAPI, getStoredUser } from '../utils/api';
+import { installationAPI, getStoredUser, authAPI } from '../utils/api';
 import { 
   FiLoader, 
   FiActivity, 
@@ -24,17 +24,25 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isAuthError, setIsAuthError] = useState(false);
 
   const fetchDashboardStats = async () => {
     setLoading(true);
     setError('');
+    setIsAuthError(false);
     try {
       const response = await installationAPI.getDashboard();
       if (response?.data) {
         setStats(response.data);
       }
     } catch (err) {
-      setError(err.message || 'Failed to fetch dashboard statistics.');
+      console.error(err);
+      if (err.status === 401 || err.response?.status === 401 || err.statusCode === 401) {
+        setIsAuthError(true);
+        setError("Session expired. Please login again.");
+      } else {
+        setError(err.message || 'Failed to fetch dashboard statistics.');
+      }
     } finally {
       setLoading(false);
     }
@@ -122,12 +130,21 @@ export default function Dashboard() {
           <div className="p-5 rounded-2xl bg-red-50 border border-red-200 text-red-650 text-sm max-w-lg mx-auto text-center space-y-3 shadow-xs">
             <FiAlertTriangle className="h-8 w-8 mx-auto" />
             <p>{error}</p>
-            <button
-              onClick={fetchDashboardStats}
-              className="px-4 py-2 bg-red-200 rounded-xl text-red-750 text-xs font-semibold hover:bg-red-300 transition"
-            >
-              Try Again
-            </button>
+            {isAuthError ? (
+              <button
+                onClick={() => authAPI.logout()}
+                className="px-4 py-2 bg-red-600 rounded-xl text-white text-xs font-semibold hover:bg-red-700 transition"
+              >
+                Logout
+              </button>
+            ) : (
+              <button
+                onClick={fetchDashboardStats}
+                className="px-4 py-2 bg-red-200 rounded-xl text-red-750 text-xs font-semibold hover:bg-red-300 transition"
+              >
+                Try Again
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-8">
