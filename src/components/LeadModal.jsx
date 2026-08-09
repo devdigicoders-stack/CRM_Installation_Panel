@@ -269,6 +269,12 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                       <FiMapPin className="text-slate-400 mt-0.5 shrink-0" />
                       <span>{lead.address || 'Address not provided'}</span>
                     </p>
+                    {lead.productId && (
+                      <p className="flex items-start gap-2 text-indigo-700 mt-2 font-semibold">
+                        <FiCheckCircle className="text-indigo-400 mt-0.5 shrink-0" />
+                        <span>Catalog Product: {lead.productId.name} (SKU: {lead.productId.sku}) [Qty: {lead.productQuantity || 1}]</span>
+                      </p>
+                    )}
                     {lead.productDetails && (
                       <p className="flex items-start gap-2 text-slate-600 mt-2">
                         <FiFileText className="text-slate-400 mt-0.5 shrink-0" />
