@@ -135,7 +135,7 @@ export const installationAPI = {
   getDashboard: async () => {
     return request('/installation/dashboard');
   },
-  getLeads: async ({ search = '', status = '', issueReported = '', page = 1, limit = 10 } = {}) => {
+  getLeads: async ({ search = '', status = '', issueReported = '', overdue = '', page = 1, limit = 10 } = {}) => {
     const query = new URLSearchParams({
       page: page.toString(),
       limit: limit.toString(),
@@ -144,6 +144,7 @@ export const installationAPI = {
     if (search) query.append('search', search);
     if (status) query.append('status', status);
     if (issueReported) query.append('issueReported', issueReported);
+    if (overdue) query.append('overdue', overdue);
     
     return request(`/installation/leads?${query.toString()}`);
   },

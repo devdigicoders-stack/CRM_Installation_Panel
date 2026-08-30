@@ -15,7 +15,8 @@ import {
   FiCheckCircle,
   FiBriefcase,
   FiX,
-  FiTrash2
+  FiTrash2,
+  FiClock
 } from 'react-icons/fi';
 
 export default function Leads() {
@@ -25,6 +26,7 @@ export default function Leads() {
   const urlSearch = searchParams.get('search') || '';
   const urlStatus = searchParams.get('status') || '';
   const urlIssue = searchParams.get('issueReported') || '';
+  const urlOverdue = searchParams.get('overdue') || '';
   const urlPage = Number(searchParams.get('page')) || 1;
   const urlLimit = Number(searchParams.get('limit')) || 10;
   const focusSearchParam = searchParams.get('focusSearch') === 'true';
@@ -35,6 +37,7 @@ export default function Leads() {
   const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
   const [status, setStatus] = useState(urlStatus);
   const [issueReported, setIssueReported] = useState(urlIssue);
+  const [overdue, setOverdue] = useState(urlOverdue);
   
   const [currentPage, setCurrentPage] = useState(urlPage);
   const [limit, setLimit] = useState(urlLimit);
@@ -45,7 +48,8 @@ export default function Leads() {
     totalAssigned: 0,
     inProgress: 0,
     completed: 0,
-    issuesReported: 0
+    issuesReported: 0,
+    overdue: 0
   });
 
   const [loading, setLoading] = useState(true);
@@ -82,7 +86,8 @@ export default function Leads() {
     setLimit(urlLimit);
     setSearch(urlSearch);
     setDebouncedSearch(urlSearch);
-  }, [urlStatus, urlIssue, urlPage, urlLimit, urlSearch]);
+    setOverdue(urlOverdue);
+  }, [urlStatus, urlIssue, urlPage, urlLimit, urlSearch, urlOverdue]);
 
   // Debounce search state change
   useEffect(() => {
@@ -124,6 +129,7 @@ export default function Leads() {
         search: debouncedSearch,
         status,
         issueReported,
+        overdue,
         page: currentPage,
         limit,
       });
@@ -151,7 +157,7 @@ export default function Leads() {
   useEffect(() => {
     fetchLeads();
     fetchStats();
-  }, [status, issueReported, currentPage, limit, debouncedSearch]);
+  }, [status, issueReported, currentPage, limit, debouncedSearch, overdue]);
 
   // When debounced search changes, reset page to 1
   useEffect(() => {
@@ -171,6 +177,7 @@ export default function Leads() {
       search: search || '',
       status,
       issueReported,
+      overdue,
       page: currentPage.toString(),
       limit: limit.toString(),
       ...newParams,
@@ -186,14 +193,26 @@ export default function Leads() {
 
   const handleStatusFilterChange = (newVal) => {
     setStatus(newVal);
+    // Clear overdue filter when switching status to avoid logical conflicts
+    setOverdue('');
     setCurrentPage(1);
-    updateQueryParams({ status: newVal, page: 1 });
+    updateQueryParams({ status: newVal, overdue: '', page: 1 });
   };
 
   const handleIssueFilterChange = (newVal) => {
     setIssueReported(newVal);
+    setOverdue('');
     setCurrentPage(1);
-    updateQueryParams({ issueReported: newVal, page: 1 });
+    updateQueryParams({ issueReported: newVal, overdue: '', page: 1 });
+  };
+
+  const handleOverdueFilterChange = (newVal) => {
+    setOverdue(newVal);
+    // Clear other filters to avoid conflicts
+    setStatus('');
+    setIssueReported('');
+    setCurrentPage(1);
+    updateQueryParams({ overdue: newVal, status: '', issueReported: '', page: 1 });
   };
 
   const handlePageChange = (newPage) => {
@@ -211,6 +230,7 @@ export default function Leads() {
     setSearch('');
     setStatus('');
     setIssueReported('');
+    setOverdue('');
     setCurrentPage(1);
     setSearchParams({});
   };
@@ -287,10 +307,17 @@ export default function Leads() {
         </div>
 
         {/* Stats Grid matching layout in screenshot */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           
           {/* Card: Total Leads */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+          <div 
+            onClick={() => handleResetFilters()}
+            className={`cursor-pointer border rounded-2xl p-5 flex items-center justify-between shadow-xs transition-all ${
+              (!status && !issueReported && !overdue) 
+                ? 'bg-blue-50/50 border-blue-200 ring-2 ring-blue-100'
+                : 'bg-white border-slate-200 hover:bg-slate-50'
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Leads</p>
               <p className="text-3xl font-extrabold text-slate-900 mt-1">
@@ -303,7 +330,14 @@ export default function Leads() {
           </div>
 
           {/* Card: Active/In Progress */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+          <div 
+            onClick={() => handleStatusFilterChange(status === 'in_progress' ? '' : 'in_progress')}
+            className={`cursor-pointer border rounded-2xl p-5 flex items-center justify-between shadow-xs transition-all ${
+              status === 'in_progress'
+                ? 'bg-yellow-50/50 border-yellow-300 ring-2 ring-yellow-100'
+                : 'bg-white border-slate-200 hover:bg-slate-50'
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">In Progress</p>
               <p className="text-3xl font-extrabold text-slate-900 mt-1">
@@ -316,7 +350,14 @@ export default function Leads() {
           </div>
 
           {/* Card: High Priority / Issues */}
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 flex items-center justify-between shadow-xs">
+          <div 
+            onClick={() => handleIssueFilterChange(issueReported === 'true' ? '' : 'true')}
+            className={`cursor-pointer border rounded-2xl p-5 flex items-center justify-between shadow-xs transition-all ${
+              issueReported === 'true'
+                ? 'bg-red-50/50 border-red-300 ring-2 ring-red-100'
+                : 'bg-white border-slate-200 hover:bg-slate-50'
+            }`}
+          >
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Delays / Issues</p>
               <p className="text-3xl font-extrabold text-slate-900 mt-1">
@@ -325,6 +366,26 @@ export default function Leads() {
             </div>
             <div className="p-3.5 rounded-2xl bg-red-50 text-red-500 border border-red-100">
               <FiAlertTriangle className="h-5 w-5" />
+            </div>
+          </div>
+
+          {/* Card: Overdue (>72 Hours) */}
+          <div 
+            onClick={() => handleOverdueFilterChange(overdue === 'true' ? '' : 'true')}
+            className={`cursor-pointer border rounded-2xl p-5 flex items-center justify-between shadow-xs transition-all ${
+              overdue === 'true'
+                ? 'bg-rose-50 border-rose-300 ring-2 ring-rose-100'
+                : 'bg-white border-slate-200 hover:bg-slate-50'
+            }`}
+          >
+            <div>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">Overdue (&gt;72h)</p>
+              <p className="text-3xl font-extrabold text-rose-600 mt-1">
+                {statsLoading ? '...' : (dashboardStats.overdue || 0)}
+              </p>
+            </div>
+            <div className="p-3.5 rounded-2xl bg-rose-50 text-rose-600 border border-rose-100">
+              <FiClock className="h-5 w-5" />
             </div>
           </div>
 
@@ -378,7 +439,7 @@ export default function Leads() {
             </select>
           </div>
 
-          {(status || issueReported || search) && (
+          {(status || issueReported || search || overdue) && (
             <button
               onClick={handleResetFilters}
               className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl text-xs font-semibold transition"
