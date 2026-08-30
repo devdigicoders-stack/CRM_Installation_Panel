@@ -22,6 +22,7 @@ export default function Leads() {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Parse parameters from URL query string
+  const urlSearch = searchParams.get('search') || '';
   const urlStatus = searchParams.get('status') || '';
   const urlIssue = searchParams.get('issueReported') || '';
   const urlPage = Number(searchParams.get('page')) || 1;
@@ -30,7 +31,8 @@ export default function Leads() {
 
   // Local component states
   const [leads, setLeads] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(urlSearch);
+  const [debouncedSearch, setDebouncedSearch] = useState(urlSearch);
   const [status, setStatus] = useState(urlStatus);
   const [issueReported, setIssueReported] = useState(urlIssue);
   
@@ -78,7 +80,17 @@ export default function Leads() {
     setIssueReported(urlIssue);
     setCurrentPage(urlPage);
     setLimit(urlLimit);
-  }, [urlStatus, urlIssue, urlPage, urlLimit]);
+    setSearch(urlSearch);
+    setDebouncedSearch(urlSearch);
+  }, [urlStatus, urlIssue, urlPage, urlLimit, urlSearch]);
+
+  // Debounce search state change
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(search);
+    }, 400);
+    return () => clearTimeout(handler);
+  }, [search]);
 
   // Focus search input if route has focus parameter
   useEffect(() => {
@@ -109,7 +121,7 @@ export default function Leads() {
     setError('');
     try {
       const response = await installationAPI.getLeads({
-        search,
+        search: debouncedSearch,
         status,
         issueReported,
         page: currentPage,
@@ -135,22 +147,28 @@ export default function Leads() {
     }
   };
 
-  // Run initial queries
+  // Run initial queries or updates when dependencies change
   useEffect(() => {
     fetchLeads();
     fetchStats();
-  }, [status, issueReported, currentPage, limit]);
+  }, [status, issueReported, currentPage, limit, debouncedSearch]);
+
+  // When debounced search changes, reset page to 1
+  useEffect(() => {
+    setCurrentPage(1);
+    updateQueryParams({ page: 1, search: debouncedSearch });
+  }, [debouncedSearch]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     setCurrentPage(1);
-    updateQueryParams({ page: 1 });
-    fetchLeads();
+    updateQueryParams({ page: 1, search });
   };
 
   // Quick helper to adjust URL query parameters
   const updateQueryParams = (newParams) => {
     const params = {
+      search: search || '',
       status,
       issueReported,
       page: currentPage.toString(),
