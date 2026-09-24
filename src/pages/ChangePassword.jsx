@@ -28,10 +28,15 @@ export default function ChangePassword() {
 
     try {
       await authAPI.changePassword(currentPassword, newPassword, confirmPassword);
-      setPassSuccess('Password updated successfully!');
+      setPassSuccess('Password updated successfully! Logging out...');
       setCurrentPassword('');
       newPassword && setNewPassword('');
       confirmPassword && setConfirmPassword('');
+      setTimeout(() => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/login';
+      }, 1200);
     } catch (err) {
       setPassError(err.message || 'Failed to change password.');
     } finally {
