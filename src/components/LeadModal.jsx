@@ -316,6 +316,18 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                         {lead.trackingId && <p>Tracking ID: <span className="text-slate-800 font-mono font-bold">{lead.trackingId}</span></p>}
                       </div>
                     )}
+                    {lead.dispatchWarehouse && (
+                      <div className="text-slate-600 flex flex-col gap-0.5 mt-1 border-t border-slate-200/60 pt-2">
+                        <span className="text-indigo-500 font-bold text-[10px] uppercase tracking-wider">Dispatch Warehouse:</span>
+                        <span className="text-slate-900 font-bold">{lead.dispatchWarehouse.name} {lead.dispatchWarehouse.code ? `(${lead.dispatchWarehouse.code})` : ''}</span>
+                        {lead.dispatchWarehouse.city && <span className="text-slate-500 text-[11px]">{lead.dispatchWarehouse.city}</span>}
+                        {lead.dispatchRemarks && (
+                          <div className="mt-1 bg-amber-50 border border-amber-200/80 rounded px-2 py-1 text-[11px] text-amber-800">
+                            <strong>Note:</strong> {lead.dispatchRemarks}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
 
