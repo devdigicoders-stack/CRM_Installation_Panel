@@ -269,12 +269,24 @@ export default function LeadModal({ lead, onClose, onRefresh }) {
                       <FiMapPin className="text-slate-400 mt-0.5 shrink-0" />
                       <span>{lead.address || 'Address not provided'}</span>
                     </p>
-                    {lead.productId && (
+                    {lead.items && lead.items.length > 0 ? (
+                      <div className="mt-2 p-2.5 bg-indigo-50/80 border border-indigo-100 rounded-xl text-xs space-y-1">
+                        <p className="font-bold text-indigo-800 uppercase tracking-wider">
+                          Installed Items ({lead.items.length}):
+                        </p>
+                        {lead.items.map((it, idx) => (
+                          <div key={idx} className="flex justify-between text-slate-700">
+                            <span>• {it.name || it.productId?.name || `Item ${idx + 1}`}</span>
+                            <span className="font-bold text-indigo-600">Qty: {it.quantity || 1}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : lead.productId ? (
                       <p className="flex items-start gap-2 text-indigo-700 mt-2 font-semibold">
                         <FiCheckCircle className="text-indigo-400 mt-0.5 shrink-0" />
                         <span>Catalog Product: {lead.productId.name} (SKU: {lead.productId.sku}) [Qty: {lead.productQuantity || 1}]</span>
                       </p>
-                    )}
+                    ) : null}
                     {lead.productDetails && (
                       <p className="flex items-start gap-2 text-slate-600 mt-2">
                         <FiFileText className="text-slate-400 mt-0.5 shrink-0" />
